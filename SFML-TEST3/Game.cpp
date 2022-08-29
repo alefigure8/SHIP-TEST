@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <string>
 
 // Private functions
 void Game::initWindow()
@@ -28,9 +29,12 @@ Game::Game()
 {
 	initWindow();
 	initPlayer();
+	initGUI();
 	
 	_spawn_timer_max = 20.f;
 	_spawn_timer = _spawn_timer_max;
+
+	_points = 0;
 }
 
 Game::~Game()
@@ -148,6 +152,7 @@ void Game::update()
 				_bullets.erase(_bullets.begin() + j);
 
 				enemy_removed = true;
+				_points++;
 			}
 		}
 
@@ -160,6 +165,9 @@ void Game::update()
 		}
 
 	}
+
+	//GUI
+	updateGUI();
 
 }
 
@@ -183,6 +191,36 @@ void Game::render()
 		Enemy->render(*_window);
 	}
 
+	//GUI
+	renderGUI();
+	
 	//Display
 	_window->display();
+
+}
+
+void Game::initGUI()
+{
+	//Load fonts
+	if(!_font.loadFromFile("Fonts/pixel.ttf"))
+		std::cout << "ERROR::GAME::Fail to load font" << std::endl;
+	
+	//Init point text
+	_point_text.setFont(_font);
+	_point_text.setCharacterSize(18);
+	_point_text.setFillColor(sf::Color::White);
+	_point_text.setPosition(100.f, 100.f);
+	_point_text.setString("Points: 0");
+}
+
+void Game::renderGUI()
+{
+	_window->draw(_point_text);
+}
+
+void Game::updateGUI()
+{
+	std::string points = "Points: " + std::to_string(_points);
+	_point_text.setString(points);
+	
 }
