@@ -20,7 +20,7 @@ void Player::initTexture()
 Player::Player()
 {
 	_movement_speed = 3.f;
-	_attack_max = 10.f;
+	_attack_max = 5.f;
 	_attack = _attack_max;
 	
 	initTexture();
