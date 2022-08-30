@@ -17,18 +17,12 @@ private:
 	float _spawn_timer;
 	float _spawn_timer_max;
 
-	int _points;
-
-	//GUI
-	sf::Font _font;
-	sf::Text _point_text;
-
 	// Private Functions
 	void initWindow();
 	void initPlayer();
 	Bullet* initBullet();
 	Enemy* initEnemies();
-	void initGUI();
+
 	
 public:
 	//Cosntructor & Destructor
@@ -37,11 +31,10 @@ public:
 	
 	// Functions
 	void run();
-	void updateGUI();
+	
 	void updatePollevents();
 	void updateInput();
 	void update();
-	void renderGUI();
 	void render();
 };
 
