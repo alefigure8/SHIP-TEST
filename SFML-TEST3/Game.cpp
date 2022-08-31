@@ -29,6 +29,7 @@ Game::Game()
 	initWindow();
 	initPlayer();
 	initGUI();
+	initWorld();
 	
 	_spawn_timer_max = 20.f;
 	_spawn_timer = _spawn_timer_max;
@@ -77,13 +78,28 @@ void Game::updateInput()
 {
 	//Player
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	{
 		_player->move(0, -1);
+		_world.move(0, 0.1);
+	}
+	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	{
 		_player->move(0, 1);
+		_world.move(0, -0.1);
+	}
+	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+	{
 		_player->move(-1, 0);
+		_world.move(0.1, 0);
+	}
+	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+	{
 		_player->move(1, 0);
+		_world.move(-0.1, 0);
+	}
 	
 	// Bullets
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && _player->canAttack())
@@ -191,12 +207,18 @@ void Game::update()
 	//GUI
 	updateGUI();
 
+	//Collision
+	updateCollision();
+
 }
 
 void Game::render()
 {
 	// Clear
 	_window->clear();
+	
+	//WORLD
+	renderWorld();
 
 	//Player
 	_player->render(*_window);
@@ -240,4 +262,47 @@ void Game::updateGUI() {
 
 void Game::renderGUI() {
 	_window->draw(_text);
+}
+
+void Game::initWorld()
+{
+	if(!_world_texture.loadFromFile("Background/backgroound.png"))
+		std::cout << "ERROR::GAME::Fail to load background" << std::endl;
+	
+	_world.setTexture(_world_texture);
+	_world.setPosition(-10.f, -10.f);
+	_world.setScale(1.5f, 1.5f);
+}
+
+void Game::renderWorld() {
+	_window->draw(_world);
+}
+
+void Game::updateWorld()
+{
+	
+}
+
+void Game::updateCollision()
+{
+	if (_player->getBounds().left < 0.f)
+	{
+		_player->setPosition(0.f, _player->getBounds().top);
+	}
+	
+	if (_player->getBounds().left + _player->getBounds().width > 800.f)
+	{
+		_player->setPosition(800.f - _player->getBounds().width, _player->getBounds().top);
+
+	}
+
+	if (_player->getBounds().top < 0.f)
+	{
+		_player->setPosition(_player->getBounds().left, 0.f);
+	}
+
+	if (_player->getBounds().top + _player->getBounds().width > 600)
+	{
+		_player->setPosition(_player->getBounds().left, 600.f - _player->getBounds().width);
+	}
 }

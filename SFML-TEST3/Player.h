@@ -25,11 +25,17 @@ public:
 	//Function
 	sf::Vector2f getPosition();
 	const sf::FloatRect getBounds() const;
+	
 	void move(float x, float y);
 	void rotate(float deg);
-	void updateAttack();
 	bool canAttack();
+	
+	//modifiers
+	void setPosition(const sf::Vector2f position);
+	void setPosition(const float x, const float y);
+	void updateAttack();
 	void update();
+	
 	void render(sf::RenderWindow& window);
 };
 

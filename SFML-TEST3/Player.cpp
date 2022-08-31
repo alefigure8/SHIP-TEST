@@ -74,3 +74,14 @@ void Player::render(sf::RenderWindow& window)
 {
 	window.draw(_sprite);
 }
+
+void Player::setPosition(const sf::Vector2f position)
+{
+	_sprite.setPosition(position);
+
+}
+
+void Player::setPosition(const float x, const float y)
+{
+	_sprite.setPosition(x, y);
+}

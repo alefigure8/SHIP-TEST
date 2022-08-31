@@ -18,9 +18,12 @@ private:
 	float _spawn_timer;
 	float _spawn_timer_max;
 
-
 	// POINST
 	int _point;
+
+	//WORLD
+	sf::Sprite _world;
+	sf::Texture _world_texture;
 	
 	// GUI
 	sf::Font _font;
@@ -31,6 +34,8 @@ private:
 	void initPlayer();
 	Bullet* initBullet();
 	Enemy* initEnemies();
+	void initGUI();
+	void initWorld();
 
 	
 public:
@@ -41,16 +46,18 @@ public:
 	// Functions
 	void run();
 
-	void initGUI();
-	void updateGUI();
-	void renderGUI();
-	
 	void updatePollevents();
 	void updateInput();
+	void updateGUI();
 	void updateBullets();
+	void updateWorld();
+	void updateCollision();
 	void updateEnemies();
 	void updateCombat();
 	void update();
+	
+	void renderWorld();
+	void renderGUI();
 	void render();
 };
 
