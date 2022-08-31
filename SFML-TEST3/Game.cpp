@@ -28,9 +28,11 @@ Game::Game()
 {
 	initWindow();
 	initPlayer();
+	initGUI();
 	
 	_spawn_timer_max = 20.f;
 	_spawn_timer = _spawn_timer_max;
+	_point = 0;
 }
 
 Game::~Game()
@@ -90,6 +92,81 @@ void Game::updateInput()
 	}
 }
 
+void Game::updateBullets()
+{
+	unsigned counter = 0;
+	for (auto* bullet : _bullets)
+	{
+		bullet->update();
+
+		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
+		{
+			//Delete bullet
+			delete _bullets.at(counter);
+			_bullets.erase(_bullets.begin() + counter);
+			--counter;
+		}
+
+		counter++;
+	}
+	
+}
+
+void Game::updateEnemies()
+{
+	//Spawuning enemies
+	_spawn_timer += 0.5f;
+	if (_spawn_timer >= _spawn_timer_max)
+	{
+		_enemies.push_back(initEnemies());
+		_spawn_timer = 0.f;
+	}
+
+	//Updating enemies
+	unsigned counter = 0;
+	for (auto* enemy : _enemies)
+	{
+		enemy->update();
+
+		//Enemies bottom screen
+		if (enemy->getBoundsEnemies().top + enemy->getBoundsEnemies().height > _window->getSize().y)
+		{
+			//Delete enemy
+			delete _enemies.at(counter);
+			_enemies.erase(_enemies.begin() + counter);
+			--counter;
+		}
+
+		counter++;
+	}
+}
+
+void Game::updateCombat()
+{
+	for (int i = 0; i < _enemies.size(); i++)
+	{
+		_enemies[i]->update();
+
+		bool enemy_removed = false;
+
+		// bullet collide with enemies
+		for (int j = 0; j < _bullets.size() && !enemy_removed; j++)
+		{
+			if (_bullets[j]->getBounds().intersects(_enemies[i]->getBoundsEnemies()))
+			{
+				delete _enemies[i];
+				_enemies.erase(_enemies.begin() + i);
+				enemy_removed = true;// break;
+				
+				delete _bullets[j];
+				_bullets.erase(_bullets.begin() + j);
+				
+				_point++;
+			}
+		}
+	}
+	
+}
 
 void Game::update()
 {
@@ -103,63 +180,16 @@ void Game::update()
 	_player->update();
 
 	//Bullet
-	unsigned counter = 0;
-	for (auto* bullet : _bullets)
-	{
-		bullet->update();
-		
-		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
-		{
-			//Delete bullet
-			delete _bullets.at(counter);
-			_bullets.erase(_bullets.begin() + counter);
-			--counter;
-		}
-		
-		counter++;
-	}
+	updateBullets();
 
 	//Enemies
-	_spawn_timer += 0.5f;
+	updateEnemies();
 
-	if (_spawn_timer >= _spawn_timer_max)
-	{
-		_enemies.push_back(initEnemies());
-		_spawn_timer = 0.f;
-	}
+	//Combat
+	updateCombat();
 
-	for (int i = 0; i < _enemies.size(); i++)
-	{
-		_enemies[i]->update();
-
-		bool enemy_removed = false;
-
-		// bullet collide with enemies
-		for (int j = 0; j < _bullets.size() && !enemy_removed; j++)
-		{
-			if (_bullets[j]->getBounds().intersects(_enemies[i]->getBoundsEnemies()))
-			{
-				// TODO: SACAR VIDA A LOS ENEMIGOS
-				//IF VIDA ENEMIGO = 0
-				delete _enemies[i];
-				_enemies.erase(_enemies.begin() + i);
-
-				delete _bullets[j];
-				_bullets.erase(_bullets.begin() + j);
-
-				enemy_removed = true;
-			}
-		}
-
-		// enemies step out screen
-		if (_enemies[i]->getBoundsEnemies().top > _window -> getSize().y && !enemy_removed)
-		{
-			delete _enemies[i];
-			_enemies.erase(_enemies.begin() + i);
-			std::cout << "Erase: " << _enemies.size() << std::endl;
-		}
-
-	}
+	//GUI
+	updateGUI();
 
 }
 
@@ -182,7 +212,32 @@ void Game::render()
 	{
 		Enemy->render(*_window);
 	}
+	
+	//GUI
+	renderGUI();
 
 	//Display
 	_window->display();
+}
+
+void Game::initGUI()
+{
+	//Load fonts
+	if(!_font.loadFromFile("Fonts/pixel.ttf"))
+		std::cout << "ERROR::GAME::Fail to load font" << std::endl;
+	
+	//Init
+	_text.setFont(_font);
+	_text.setCharacterSize(20);
+	_text.setFillColor(sf::Color::White);
+	_text.setPosition(10.f, 10.f);
+	_text.setString("Score: " + std::to_string(_point));
+}
+
+void Game::updateGUI() {
+	_text.setString("Score: " + std::to_string(_point));
+}
+
+void Game::renderGUI() {
+	_window->draw(_text);
 }

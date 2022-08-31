@@ -14,8 +14,17 @@ private:
 	std::vector<Enemy*> _enemies;
 	std::vector<Bullet*> _bullets;
 
+	//SPAWN
 	float _spawn_timer;
 	float _spawn_timer_max;
+
+
+	// POINST
+	int _point;
+	
+	// GUI
+	sf::Font _font;
+	sf::Text _text;
 
 	// Private Functions
 	void initWindow();
@@ -31,9 +40,16 @@ public:
 	
 	// Functions
 	void run();
+
+	void initGUI();
+	void updateGUI();
+	void renderGUI();
 	
 	void updatePollevents();
 	void updateInput();
+	void updateBullets();
+	void updateEnemies();
+	void updateCombat();
 	void update();
 	void render();
 };
