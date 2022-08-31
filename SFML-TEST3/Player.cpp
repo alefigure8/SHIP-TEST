@@ -22,6 +22,8 @@ Player::Player()
 	_movement_speed = 3.f;
 	_attack_max = 5.f;
 	_attack = _attack_max;
+	_hp_max = 100;
+	_hp = _hp_max;
 	
 	initTexture();
 	initSprite();
@@ -84,4 +86,24 @@ void Player::setPosition(const sf::Vector2f position)
 void Player::setPosition(const float x, const float y)
 {
 	_sprite.setPosition(x, y);
+}
+
+int& Player::getHP()
+{
+	return _hp;
+}
+
+int& Player::getHPMAX()
+{
+	return _hp_max;
+}
+
+void Player::setHP(int hp) {
+	_hp = hp;
+}
+
+void Player::loseHP(int value){
+	_hp -= value;
+	if (_hp < 0)
+		_hp = 0;
 }

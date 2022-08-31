@@ -13,6 +13,9 @@ private:
 
 	float _attack;
 	float _attack_max;
+
+	int _hp;
+	int _hp_max;
 	
 	//Private Functions
 	void initSprite();
@@ -25,6 +28,8 @@ public:
 	//Function
 	sf::Vector2f getPosition();
 	const sf::FloatRect getBounds() const;
+	int& getHP();
+	int& getHPMAX();
 	
 	void move(float x, float y);
 	void rotate(float deg);
@@ -33,6 +38,9 @@ public:
 	//modifiers
 	void setPosition(const sf::Vector2f position);
 	void setPosition(const float x, const float y);
+	void setHP(int hp);
+	void loseHP(int value);
+	
 	void updateAttack();
 	void update();
 	
