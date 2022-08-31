@@ -1,5 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <string>
+#include <sstream>
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
@@ -19,7 +21,7 @@ private:
 	float _spawn_timer_max;
 
 	// POINST
-	int _point;
+	unsigned _point;
 
 	//WORLD
 	sf::Sprite _world;
@@ -28,6 +30,10 @@ private:
 	// GUI
 	sf::Font _font;
 	sf::Text _text;
+	sf::Text _game_over;
+	
+	sf::RectangleShape _player_bar;
+	sf::RectangleShape _player_bar_back;
 
 	// Private Functions
 	void initWindow();

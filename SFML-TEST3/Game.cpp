@@ -59,7 +59,11 @@ void Game::run()
 	// GAME LOOP
 	while (_window->isOpen())
 	{
-		update();
+		updatePollevents();
+		
+		if(_player -> getHP() > 0)
+			update();
+		
 		render();
 	}
 }
@@ -80,25 +84,25 @@ void Game::updateInput()
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
 		_player->move(0, -1);
-		_world.move(0, 0.1);
+		_world.move(0, 0.1f);
 	}
 	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 	{
 		_player->move(0, 1);
-		_world.move(0, -0.1);
+		_world.move(0, -0.1f);
 	}
 	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
 		_player->move(-1, 0);
-		_world.move(0.1, 0);
+		_world.move(0.1f, 0);
 	}
 	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
 		_player->move(1, 0);
-		_world.move(-0.1, 0);
+		_world.move(-0.1f, 0);
 	}
 	
 	// Bullets
@@ -120,7 +124,6 @@ void Game::updateBullets()
 			//Delete bullet
 			delete _bullets.at(counter);
 			_bullets.erase(_bullets.begin() + counter);
-			--counter;
 		}
 
 		counter++;
@@ -144,15 +147,22 @@ void Game::updateEnemies()
 	{
 		enemy->update();
 
-		//Enemies bottom screen
 		if (enemy->getBoundsEnemies().top + enemy->getBoundsEnemies().height > _window->getSize().y)
 		{
-			//Delete enemy
+			//Delete enemy when step out the screen
 			delete _enemies.at(counter);
 			_enemies.erase(_enemies.begin() + counter);
-			--counter;
 		}
-
+		else if (enemy->getBoundsEnemies().intersects(_player->getBounds()))
+		{
+			//Damage
+			_player->loseHP(_enemies.at(counter)->getDamage());
+			
+			//Delete enemy when crash with the ship
+			delete _enemies.at(counter);
+			_enemies.erase(_enemies.begin() + counter);
+		}
+		
 		counter++;
 	}
 }
@@ -170,14 +180,15 @@ void Game::updateCombat()
 		{
 			if (_bullets[j]->getBounds().intersects(_enemies[i]->getBoundsEnemies()))
 			{
+				_point+= _enemies[i] -> getPoints();
+				
 				delete _enemies[i];
 				_enemies.erase(_enemies.begin() + i);
-				enemy_removed = true;// break;
 				
 				delete _bullets[j];
 				_bullets.erase(_bullets.begin() + j);
 				
-				_point++;
+				enemy_removed = true;// break;
 			}
 		}
 	}
@@ -186,9 +197,6 @@ void Game::updateCombat()
 
 void Game::update()
 {
-	//PollEvents
-	updatePollevents();
-
 	//Inputs
 	updateInput();
 
@@ -238,30 +246,64 @@ void Game::render()
 	//GUI
 	renderGUI();
 
+
+	//GAME OVER
+	if (_player->getHP() <= 0)
+		_window->draw(_game_over);
+
 	//Display
 	_window->display();
 }
 
 void Game::initGUI()
 {
-	//Load fonts
+	//FONTS
 	if(!_font.loadFromFile("Fonts/pixel.ttf"))
 		std::cout << "ERROR::GAME::Fail to load font" << std::endl;
 	
-	//Init
+	//POINTS
 	_text.setFont(_font);
 	_text.setCharacterSize(20);
 	_text.setFillColor(sf::Color::White);
 	_text.setPosition(10.f, 10.f);
 	_text.setString("Score: " + std::to_string(_point));
+
+	//GAME OVER
+	_game_over.setFont(_font);
+	_game_over.setCharacterSize(60);
+	_game_over.setFillColor(sf::Color::Red);
+	_game_over.setString("GAME OVER");
+	_game_over.setPosition(
+		_window->getSize().x / 2.f - _game_over.getGlobalBounds().width / 2.f,
+		_window->getSize().y / 2.f - _game_over.getGlobalBounds().height / 2.f
+		);
+
+	//PLAYER BAR
+	_player_bar.setSize(sf::Vector2f(300.f, 20.f));
+	_player_bar.setFillColor(sf::Color::Red);
+	_player_bar.setPosition(sf::Vector2f(10.f , 40.f));
+	
+	_player_bar_back = _player_bar;
+	_player_bar_back.setFillColor(sf::Color(25, 25, 25, 200));
 }
 
 void Game::updateGUI() {
-	_text.setString("Score: " + std::to_string(_point));
+
+	//POINTS
+	std::stringstream ss;
+	ss << "Score: " << _point;
+	_text.setString(ss.str());
+	
+	//PLAYER
+	float hpPercent = static_cast<float>(_player->getHP()) / _player->getHPMAX();
+	_player_bar.setSize(sf::Vector2f(300.f * hpPercent, _player_bar.getSize().y));
+
 }
 
 void Game::renderGUI() {
 	_window->draw(_text);
+	_window->draw(_player_bar_back);
+	_window->draw(_player_bar);
 }
 
 void Game::initWorld()
@@ -285,24 +327,28 @@ void Game::updateWorld()
 
 void Game::updateCollision()
 {
+	// LEFT
 	if (_player->getBounds().left < 0.f)
 	{
 		_player->setPosition(0.f, _player->getBounds().top);
 	}
 	
-	if (_player->getBounds().left + _player->getBounds().width > 800.f)
+	// RIGHT
+	else if (_player->getBounds().left + _player->getBounds().width > _window->getSize().x)
 	{
-		_player->setPosition(800.f - _player->getBounds().width, _player->getBounds().top);
+		_player->setPosition(_window->getSize().x - _player->getBounds().width, _player->getBounds().top);
 
 	}
 
+	//UP
 	if (_player->getBounds().top < 0.f)
 	{
 		_player->setPosition(_player->getBounds().left, 0.f);
 	}
 
-	if (_player->getBounds().top + _player->getBounds().width > 600)
+	//DOWN
+	else if (_player->getBounds().top + _player->getBounds().height >= _window -> getSize().y)
 	{
-		_player->setPosition(_player->getBounds().left, 600.f - _player->getBounds().width);
+		_player->setPosition(_player->getBounds().left, _window->getSize().y - _player->getBounds().width);
 	}
 }
